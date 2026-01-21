@@ -74,6 +74,29 @@ body {
   flex: 1;
   padding: 15px;
   overflow-y: auto;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.log-cmd {
+  color: #79c0ff;
+  font-weight: bold;
+}
+
+.log-success {
+  color: #3fb950;
+}
+
+.log-error {
+  color: #f85149;
+}
+
+.log-info {
+  color: #8b949e;
+}
+
+.log-warning {
+  color: #ffd33d;
 }
 
 .input-line {
@@ -85,6 +108,7 @@ body {
 
 .input-line span {
   margin-right: 10px;
+  color: #79c0ff;
 }
 
 .input-line input {
