@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Git Quest</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar">
+    <h2>🧭 Desafio Atual</h2>
+    <h3 id="questTitle"></h3>
+    <p id="questDesc"></p>
+    <div class="hint" id="questHint"></div>
+  </aside>
+
+  <main class="main">
+
+    <header class="status">
+      <span>📦 Repo: <strong id="repoStatus">Não iniciado</strong></span>
+      <span>🌿 Branch: <strong id="branchStatus">-</strong></span>
+    </header>
+
+    <section class="graph">
+      <h3>🌳 Visual do Repositório</h3>
+      <div id="graph"></div>
+    </section>
+
+    <div class="terminal" id="terminal"></div>
+
+    <div class="input-line">
+      <span>$</span>
+      <input id="commandInput" type="text" placeholder="digite um comando git..." autofocus />
+    </div>
+
+  </main>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
