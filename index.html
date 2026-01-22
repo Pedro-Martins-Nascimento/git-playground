@@ -11,9 +11,24 @@
 
   <aside class="sidebar">
     <h2>🧭 Desafio Atual</h2>
+    
+    <div class="difficulty-selector">
+      <label>Nível:</label>
+      <select id="difficultyLevel">
+        <option value="basico">🟢 Básico</option>
+        <option value="medio">🟡 Médio</option>
+        <option value="dificil">🔴 Difícil</option>
+        <option value="sandbox">🎮 Sandbox (Livre)</option>
+      </select>
+    </div>
+
+    <div id="context" class="context"></div>
+
     <h3 id="questTitle"></h3>
     <p id="questDesc"></p>
     <div class="hint" id="questHint"></div>
+    <div id="questProgress" class="quest-progress"></div>
+    <div id="questList" class="quest-list"></div>
   </aside>
 
   <main class="main">
@@ -38,6 +53,8 @@
   </main>
 </div>
 
+<script src="quests.js"></script>
+<script src="commands.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

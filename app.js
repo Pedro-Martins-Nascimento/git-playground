@@ -9,40 +9,22 @@ let mergeFeito = false;
 let prCriado = false;
 let questIndex = 0;
 let stash = [];
+let difficulty = "basico";
+let completedLevels = [];
+let mergedBranches = [];
+let lastCommand = "";
+let pushDone = false;
+let pullDone = false;
+let stashPopped = false;
+let stashUsed = false;
+let revertDone = false;
+let resetDone = false;
 
-const quests = [
-  {
-    title: "🚀 Iniciar Repositório",
-    desc: "Crie um repositório Git para começar.",
-    hint: "Use: git init",
-    check: () => repo
-  },
-  {
-    title: "📦 Primeiro Commit",
-    desc: "Crie seu primeiro commit.",
-    hint: 'Use: git commit -m "mensagem"',
-    check: () => commits.length >= 1
-  },
-  {
-    title: "🌿 Criar Branch",
-    desc: "Crie uma nova branch para desenvolver uma feature.",
-    hint: "Use: git branch feature",
-    check: () => branches.length > 1
-  },
-  {
-    title: "🔀 Merge",
-    desc: "Faça merge da branch na main.",
-    hint: "Use: git checkout main + git merge feature",
-    check: () => mergeFeito
-  },
-  {
-    title: "🔁 Pull Request",
-    desc: "Crie um Pull Request para revisão.",
-    hint: "Use: git pull-request",
-    check: () => prCriado
-  }
-];
+let quests = questsBasico;
+let commandHistory = [];
+let historyIndex = -1;
 
+// LOG COM CORES
 function log(msg) {
   let className = "log-info";
   let finalMsg = msg;
@@ -62,30 +44,90 @@ function log(msg) {
   terminal.scrollTop = terminal.scrollHeight;
 }
 
-function countCommits(targetBranch) {
-  return commits.filter(c => c.branch === targetBranch).length;
-}
-
+// ATUALIZAR PROGRESSO DO QUEST
 function updateQuest() {
   const q = quests[questIndex];
-  document.getElementById("questTitle").innerText = q?.title || "🎉 Concluído!";
-  document.getElementById("questDesc").innerText = q?.desc || "";
-  document.getElementById("questHint").innerText = q?.hint || "";
+  document.getElementById("questTitle").innerText = q?.title || "🎉 Parabéns!";
+  document.getElementById("questDesc").innerText = q?.desc || "Você completou este nível! Escolha outro para continuar aprendendo.";
+  
+  // Mostrar contexto
+  document.getElementById("context").innerHTML = contexts[difficulty];
+  
+  // Mostrar progresso
+  const currentNum = Math.min(questIndex + 1, quests.length);
+  const progress = `Desafio ${currentNum}/${quests.length}`;
+  const doneMark = questIndex >= quests.length ? "✅" : "☐";
+  document.getElementById("questProgress").innerText = `${doneMark} ${progress}`;
+
+  // Checklist lateral
+  const list = quests
+    .map((item, idx) => {
+      const done = idx < questIndex || (idx === questIndex && item.check());
+      const status = done ? "☑" : "☐";
+      const activeClass = idx === questIndex ? "active" : "";
+      const doneClass = done ? "done" : "";
+      const steps = item.steps?.length
+        ? `<div class="quest-steps">${item.steps
+            .map(step => {
+              // Só valida se for desafio passado ou atual
+              const stepDone = (idx < questIndex || idx === questIndex) && typeof step.done === "function" ? step.done() : false;
+              const stepMark = stepDone ? "☑" : "☐";
+              return `<div class="quest-step ${stepDone ? "done" : ""}">${stepMark} ${step.text}</div>`;
+            })
+            .join("")}</div>`
+        : "";
+      return `
+        <div class="quest-item ${activeClass} ${doneClass}">
+          <div class="quest-check">${status}</div>
+          <div class="quest-text">
+            <div class="quest-title">${item.title}</div>
+            <div class="quest-desc">${item.desc}</div>
+            ${steps}
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+  document.getElementById("questList").innerHTML = list;
+
+  // Mostrar ou esconder dica baseado na dificuldade
+  const hintElement = document.getElementById("questHint");
+  if (difficulty === "dificil") {
+    hintElement.innerText = "💪 Nenhuma dica neste nível. Use 'comandos' para explorar!";
+    hintElement.style.color = "#f85149";
+  } else if (q?.hint) {
+    hintElement.innerText = q.hint;
+    hintElement.style.color = "#8b949e";
+  } else {
+    hintElement.innerText = "";
+  }
 }
 
+// VERIFICAR SE DESAFIO FOI COMPLETADO
 function checkQuest() {
   if (quests[questIndex]?.check()) {
     log("✅ Desafio concluído!");
     questIndex++;
+    
+    // Se completou todos os desafios do nível
+    if (questIndex >= quests.length) {
+      if (!completedLevels.includes(difficulty)) {
+        completedLevels.push(difficulty);
+      }
+      log(`🎉 Nível ${difficulty.toUpperCase()} COMPLETO! Escolha outro nível para continuar.`);
+    }
+    
     updateQuest();
   }
 }
 
+// ATUALIZAR STATUS
 function updateStatus() {
   document.getElementById("repoStatus").innerText = repo ? "Inicializado" : "Não iniciado";
   document.getElementById("branchStatus").innerText = branch || "-";
 }
 
+// RENDERIZAR GRAFO DE BRANCHES
 function renderGraph() {
   const graph = document.getElementById("graph");
   graph.innerHTML = "";
@@ -105,180 +147,121 @@ function renderGraph() {
   });
 }
 
-input.addEventListener("keydown", e => {
-  if (e.key === "Enter") {
-    executar(input.value.trim());
-    input.value = "";
-  }
-});
+// MUDAR DE DIFICULDADE (COM VALIDAÇÃO)
+function changeDifficulty(newDifficulty) {
+  const currentIndex = levelOrder.indexOf(difficulty);
+  const newIndex = levelOrder.indexOf(newDifficulty);
 
-function executar(cmd) {
-  log(`$ ${cmd}`);
-
-  if (cmd === "git init") {
-    repo = true;
-    branch = "main";
-    branches = ["main"];
-    log("Repositório Git inicializado.");
+  // Validar progressão: só pode pular para próximo nível se completou o anterior
+  if (newIndex > currentIndex && !completedLevels.includes(levelOrder[currentIndex])) {
+    return log(`⚠️ Você deve completar o nível ${levelOrder[currentIndex].toUpperCase()} antes de acessar ${newDifficulty.toUpperCase()}`);
   }
 
-  else if (cmd === "help") {
-    const q = quests[questIndex];
-    return log(q ? `Dica: ${q.hint}` : "Nenhum desafio ativo.");
-  }
+  // Se voltando para um nível anterior, permitir
+  difficulty = newDifficulty;
+  questIndex = 0;
+  lastCommand = "";
+  mergedBranches = [];
+  pushDone = false;
+  pullDone = false;
+  stashPopped = false;
+  stashUsed = false;
+  revertDone = false;
+  resetDone = false;
 
-  else if (cmd === "objetivo") {
-    const q = quests[questIndex];
-    return log(q ? `Objetivo: ${q.title} - ${q.desc}` : "Nenhum desafio ativo.");
-  }
-
-  else if (cmd === "reset") {
+  // RESET STATE ONLY if going BACKWARDS (to previous level)
+  if (newIndex < currentIndex) {
     repo = false;
     branch = "";
     branches = [];
     commits = [];
     mergeFeito = false;
     prCriado = false;
-    questIndex = 0;
-    log("Estado resetado. Use 'git init' para começar novamente.");
-    updateQuest();
-    updateStatus();
-    renderGraph();
-    return;
+    stash = [];
+    terminal.innerHTML = "";
+  }
+  
+  // If going FORWARD, show that repo state persisted
+  if (newIndex > currentIndex) {
+    log(`✅ Nível ${newDifficulty.toUpperCase()} iniciado!`);
+    if (repo) {
+      log(`📁 Repositório carregado: branch '${branch}' com ${commits.length} commits`);
+    }
+
+    // Onboarding por nível
+    if (newDifficulty === "medio") {
+      log("📚 Dica: use 'comandos' para ver todos os comandos e 'objetivo' para relembrar a tarefa atual.");
+      log("🧭 No nível MÉDIO você praticará: git status, git branch, git checkout, git commit, git stash/pop, git push, git pull, git merge.");
+    }
+    if (newDifficulty === "dificil") {
+      log("🚀 Lembre: 'comandos' lista tudo. Você vai precisar de: branch/checkout/commit, stash/pop, merge, push, pull, revert, reset.");
+      log("📌 Cada desafio descreve o que fazer; leia a descrição/hint para saber as etapas.");
+    }
   }
 
-  else if (cmd === "comandos" || cmd === "commands") {
-    return log(`
-📚 Comandos Disponíveis:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-INICIALIZAÇÃO:
-  git init - Inicializa um repositório
-
-COMMITS E BRANCHES:
-  git commit -m "msg" - Cria um commit
-  git branch <nome> - Cria uma branch
-  git checkout <branch> - Muda de branch
-  git status - Mostra status atual
-
-MERGE E COLABORAÇÃO:
-  git merge feature - Faz merge
-  git stash - Guarda trabalho
-  git stash pop - Recupera stash
-  git pull - Puxa do remoto
-  git push - Envia para remoto
-
-DESFAZER MUDANÇAS:
-  git revert - Remove último commit
-  git reset --hard HEAD~1 - Reset local
-
-OUTROS:
-  git pull-request - Cria PR (simulado)
-
-AJUDA:
-  help - Mostra dica do desafio
-  objetivo - Mostra objetivo
-  comandos - Lista todos os comandos
-  reset - Reseta o estado
-    `);
+  if (newDifficulty === "basico") {
+    quests = questsBasico;
+    log("🟢 Nível BÁSICO iniciado!");
+  } else if (newDifficulty === "medio") {
+    quests = questsMedio;
+    log("🟡 Nível MÉDIO iniciado! (Menos dicas)");
+  } else if (newDifficulty === "dificil") {
+    quests = questsDificil;
+    log("🔴 Nível DIFÍCIL iniciado! (Sem dicas!)");
+  } else if (newDifficulty === "sandbox") {
+    quests = questsSandbox;
+    log("🎮 SANDBOX ativado! Use 'comandos' para listar tudo.");
   }
 
-  else if (cmd.startsWith("git commit")) {
-    if (!repo) return log("fatal: não é um repositório git");
-    commits.push({ branch });
-    log(`Commit criado na branch ${branch}`);
-  }
-
-  else if (cmd.startsWith("git branch ")) {
-    if (!repo) return log("fatal: não é um repositório git");
-    const name = cmd.split(" ")[2];
-    if (!name) return log("fatal: nome da branch é obrigatório");
-    if (branches.includes(name)) return log("fatal: branch já existe");
-    branches.push(name);
-    log(`Branch ${name} criada`);
-  }
-
-  else if (cmd.startsWith("git checkout ")) {
-    if (!repo) return log("fatal: não é um repositório git");
-    const target = cmd.split(" ")[2];
-    if (!target) return log("fatal: você deve especificar uma branch");
-    if (!branches.includes(target)) return log(`error: pathspec '${target}' não corresponde a nenhuma branch conhecida`);
-    branch = target;
-    log(`Mudou para branch ${branch}`);
-  }
-
-  else if (cmd === "git merge feature") {
-    if (!repo) return log("fatal: não é um repositório git");
-    if (branch !== "main") return log("Vá para main antes do merge");
-    const hasFeatureCommits = commits.some(c => c.branch === "feature");
-    if (!hasFeatureCommits) return log("Nenhum commit na branch feature para mergear.");
-    commits.push({ branch: "main" });
-    mergeFeito = true;
-    log("Merge realizado com sucesso.");
-  }
-
-  else if (cmd === "git status") {
-    if (!repo) return log("fatal: não é um repositório git");
-    const total = countCommits(branch);
-    const stashCount = stash.filter(s => s.branch === branch).length;
-    log(`On branch ${branch} | commits: ${total} | stash: ${stashCount}`);
-  }
-
-  else if (cmd === "git stash") {
-    if (!repo) return log("fatal: não é um repositório git");
-    stash.push({ branch });
-    log(`Itens salvos no stash da branch ${branch}`);
-  }
-
-  else if (cmd === "git stash pop") {
-    if (!repo) return log("fatal: não é um repositório git");
-    const idx = stash.map((s, i) => ({ ...s, i })).filter(s => s.branch === branch).pop()?.i;
-    if (idx === undefined) return log("Nenhum stash para aplicar nesta branch.");
-    stash.splice(idx, 1);
-    log(`Stash aplicado na branch ${branch}`);
-  }
-
-  else if (cmd === "git revert") {
-    if (!repo) return log("fatal: não é um repositório git");
-    const lastIndex = [...commits].map((c, i) => ({ ...c, i })).filter(c => c.branch === branch).pop()?.i;
-    if (lastIndex === undefined) return log("Nada para reverter nesta branch.");
-    commits.splice(lastIndex, 1);
-    log("Revert aplicado: último commit removido desta branch.");
-  }
-
-  else if (cmd === "git reset --hard HEAD~1") {
-    if (!repo) return log("fatal: não é um repositório git");
-    const lastIndex = [...commits].map((c, i) => ({ ...c, i })).filter(c => c.branch === branch).pop()?.i;
-    if (lastIndex === undefined) return log("Nada para resetar nesta branch.");
-    commits.splice(lastIndex, 1);
-    log("Reset hard: último commit local removido (simulação). Use push para enviar outro commit.");
-  }
-
-  else if (cmd === "git pull") {
-    if (!repo) return log("fatal: não é um repositório git");
-    commits.push({ branch, remote: true });
-    log("Pull simulado: commit remoto adicionado.");
-  }
-
-  else if (cmd === "git push") {
-    if (!repo) return log("fatal: não é um repositório git");
-    const total = countCommits(branch);
-    if (total === 0) return log("Nada para enviar. Faça um commit primeiro.");
-    log("Push simulado: alterações enviadas.");
-  }
-
-  else if (cmd === "git pull-request") {
-    prCriado = true;
-    log("Pull Request criado (simulado).");
-  }
-
-  else {
-    log("Comando não reconhecido.");
-  }
-
+  updateQuest();
   updateStatus();
   renderGraph();
-  checkQuest();
 }
 
+// EVENT LISTENERS
+input.addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    const cmd = input.value.trim();
+    if (cmd) {
+      commandHistory.push(cmd);
+      historyIndex = commandHistory.length;
+      executeCommand(cmd);
+    }
+    input.value = "";
+  } else if (e.key === "ArrowUp") {
+    e.preventDefault();
+    if (historyIndex > 0) {
+      historyIndex--;
+      input.value = commandHistory[historyIndex];
+    }
+  } else if (e.key === "ArrowDown") {
+    e.preventDefault();
+    if (historyIndex < commandHistory.length - 1) {
+      historyIndex++;
+      input.value = commandHistory[historyIndex];
+    } else {
+      historyIndex = commandHistory.length;
+      input.value = "";
+    }
+  }
+});
+
+const difficultySelect = document.getElementById("difficultyLevel");
+difficultySelect.addEventListener("change", (e) => {
+  const newDiff = e.target.value;
+  const currentIndex = levelOrder.indexOf(difficulty);
+  const newIndex = levelOrder.indexOf(newDiff);
+  
+  // Bloquear se tentar pular nível sem completar atual
+  if (newIndex > currentIndex && !completedLevels.includes(levelOrder[currentIndex])) {
+    log(`⚠️ Você deve completar o nível ${levelOrder[currentIndex].toUpperCase()} antes de acessar ${newDiff.toUpperCase()}`);
+    e.target.value = difficulty; // Reverte dropdown
+    return;
+  }
+  
+  changeDifficulty(newDiff);
+});
+
+// INICIALIZAR
 updateQuest();
 updateStatus();
