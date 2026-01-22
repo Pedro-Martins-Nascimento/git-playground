@@ -25,6 +25,125 @@ body {
   color: #58a6ff;
 }
 
+.difficulty-selector {
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 15px;
+}
+
+.difficulty-selector label {
+  display: block;
+  font-size: 12px;
+  color: #8b949e;
+  margin-bottom: 5px;
+}
+
+.difficulty-selector select {
+  width: 100%;
+  padding: 8px;
+  background: #161b22;
+  color: #c9d1d9;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: monospace;
+}
+
+.difficulty-selector select:hover {
+  border-color: #58a6ff;
+}
+
+.context {
+  background: #0d1117;
+  border-left: 3px solid #58a6ff;
+  border-radius: 4px;
+  padding: 12px;
+  margin: 15px 0;
+  font-size: 12px;
+  color: #8b949e;
+  line-height: 1.5;
+}
+
+.context strong {
+  color: #79c0ff;
+}
+
+.quest-progress {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  padding: 8px;
+  margin-top: 10px;
+  font-size: 11px;
+  color: #8b949e;
+  text-align: center;
+}
+
+.quest-list {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quest-item {
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 8px;
+  background: #0f1622;
+  display: flex;
+  gap: 8px;
+}
+
+.quest-item.active {
+  border-color: #58a6ff;
+  box-shadow: 0 0 0 1px #58a6ff33;
+}
+
+.quest-check {
+  width: 20px;
+  text-align: center;
+  color: #8b949e;
+}
+
+.quest-item.done .quest-check {
+  color: #3fb950;
+}
+
+.quest-text {
+  flex: 1;
+}
+
+.quest-title {
+  font-weight: bold;
+  color: #c9d1d9;
+  margin-bottom: 2px;
+}
+
+.quest-desc {
+  font-size: 12px;
+  color: #8b949e;
+}
+
+.quest-steps {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.quest-step {
+  font-size: 12px;
+  color: #8b949e;
+  padding-left: 4px;
+}
+
+.quest-step.done {
+  color: #3fb950;
+}
+
 .hint {
   margin-top: 10px;
   color: #8b949e;
