@@ -51,8 +51,8 @@ Com uma interface intuitiva e sistema de desafios gamificado, Git Quest torna o 
 <table>
   <tr>
     <td align="center" width="33%">
-      <h3>🎯 Desafios Progressivos</h3>
-      <p>Complete missões estruturadas que ensinam Git do básico ao intermediário</p>
+      <h3>🎯 4 Níveis de Dificuldade</h3>
+      <p>Básico, Médio, Difícil e Sandbox com progressão obrigatória</p>
     </td>
     <td align="center" width="33%">
       <h3>🌳 Visualização em Tempo Real</h3>
@@ -60,21 +60,21 @@ Com uma interface intuitiva e sistema de desafios gamificado, Git Quest torna o 
     </td>
     <td align="center" width="33%">
       <h3>💻 Terminal Realista</h3>
-      <p>Interface de linha de comando que simula a experiência real</p>
+      <p>Histórico de comandos com setas ⬆️⬇️ como terminal real</p>
     </td>
   </tr>
   <tr>
     <td align="center">
-      <h3>📊 Status Instantâneo</h3>
-      <p>Acompanhe o estado do repositório e branch em tempo real</p>
+      <h3>☑️ Checklist Interativo</h3>
+      <p>Acompanhe cada subtarefa com marcação automática em tempo real</p>
     </td>
     <td align="center">
-      <h3>🎨 Interface Moderna</h3>
-      <p>Design elegante inspirado no GitHub com tema dark</p>
+      <h3>🔒 Validação de Comandos</h3>
+      <p>Bloqueia ações fora do escopo nos níveis Básico e Médio</p>
     </td>
     <td align="center">
       <h3>⚡ Sem Instalação</h3>
-      <p>Funciona direto no navegador, sem dependências</p>
+      <p>Arquitetura modular com 3 arquivos JS separados</p>
     </td>
   </tr>
 </table>
@@ -118,8 +118,18 @@ cd git-playground
 | `git commit -m "msg"` | Cria um novo commit |
 | `git branch <nome>` | Cria uma nova branch |
 | `git checkout <branch>` | Muda para outra branch |
-| `git merge feature` | Faz merge da branch feature na main |
-| `git pull-request` | Simula criação de PR |
+| `git merge <branch>` | Faz merge de uma branch na atual |
+| `git status` | Mostra status do repositório |
+| `git stash` | Guarda trabalho temporário |
+| `git stash pop` | Recupera trabalho do stash |
+| `git push` | Envia commits para remoto |
+| `git pull` | Recebe commits do remoto |
+| `git revert` | Remove último commit |
+| `git reset --hard HEAD~1` | Reset local forçado |
+| `help` | Mostra dica do desafio atual |
+| `objetivo` | Exibe objetivo do desafio |
+| `comandos` | Lista todos os comandos |
+| `reset` | Reinicia o estado atual |
 
 ### 💡 Exemplo Prático Completo
 
@@ -131,20 +141,33 @@ $ git checkout feature
 $ git commit -m "nova funcionalidade"
 $ git checkout main
 $ git merge feature
-$ git pull-request
+$ git push
 ```
 
 ---
 
 ## 🎯 Desafios
 
-| # | Desafio | Objetivo | Dificuldade |
-|---|---------|----------|-------------|
-| 1 | 🚀 Iniciar Repositório | Criar seu primeiro repositório Git | ⭐ Fácil |
-| 2 | 📦 Primeiro Commit | Fazer um commit com mensagem | ⭐ Fácil |
-| 3 | 🌿 Criar Branch | Criar e gerenciar branches | ⭐⭐ Médio |
-| 4 | 🔀 Merge | Integrar mudanças entre branches | ⭐⭐ Médio |
-| 5 | 🔁 Pull Request | Simular um Pull Request | ⭐⭐ Médio |
+### 🟭 Nível Básico (5 desafios)
+Aprenda os fundamentos do Git com instruções claras e dicas detalhadas.
+
+### 🟡 Nível Médio (7 desafios)
+Trabalhe com múltiplas branches, stash, push/pull e fluxos colaborativos.
+
+### 🔴 Nível Difícil (4 desafios)
+Domine fluxos completos, revert/reset e simulação de projetos open source - sem dicas!
+
+### 🎮 Sandbox
+Explore livremente todos os comandos sem restrições.
+
+**Total**: 20+ desafios progressivos com validação automática e checklist interativo!
+
+#### Recursos do Sistema de Desafios:
+- ☑️ Checklist com subtarefas que marcam em tempo real
+- 🔒 Progressão obrigatória entre níveis
+- 🏆 Persistência de histórico ao avançar níveis
+- 🚫 Validação que bloqueia comandos fora do escopo
+- 📚 Contexto narrativo para cada nível
 
 ---
 
@@ -178,30 +201,41 @@ $ git pull-request
 git-playground/
 ├── 📄 index.html           # Página principal - Estrutura HTML
 ├── 🎨 style.css            # Estilos CSS com tema dark
-├── ⚙️  app.js              # Lógica JavaScript (670+ linhas)
+├── 🎯 quests.js            # Definições de desafios e contextos
+├── ⚙️  commands.js          # Lógica de comandos Git
+├── 🎮 app.js               # Gerenciamento de estado e UI
 └── 📖 README.md            # Documentação
 ```
 
-### Arquitetura Técnica
+### Arquitetura Modular
 
 ```
 ┌─────────────────────────────────────────┐
-│           index.html                    │
-│    (DOM + Estrutura Semântica)          │
+│           quests.js                     │
+│   (Definições de 20 desafios)           │
+│   - questsBasico (5)                    │
+│   - questsMedio (7)                     │
+│   - questsDificil (4)                   │
+│   - contexts & levelOrder               │
 └────────────────┬────────────────────────┘
                  │
 ┌────────────────▼────────────────────────┐
-│           style.css                     │
-│   (Tema Dark, Layout Flexbox, 350px)    │
+│           commands.js                   │
+│   (13 comandos Git + validação)         │
+│   - executeCommand()                    │
+│   - Validação contextual                │
+│   - Tracking de ações                   │
 └────────────────┬────────────────────────┘
                  │
 ┌────────────────▼────────────────────────┐
 │           app.js                        │
+│   (Gerenciamento de estado & UI)        │
 │  ┌─────────────────────────────────┐   │
-│  │ • Estado Global (repo, branch)  │   │
-│  │ • Sistema de Quests             │   │
-│  │ • Parser de Comandos Git        │   │
-│  │ • Renderizador de Grafo Visual  │   │
+│  │ • Estado Global (21 variáveis)  │   │
+│  │ • Histórico de Comandos (⬆️⬇️)   │   │
+│  │ • Sistema de Checklist          │   │
+│  │ • Renderizador de Grafo         │   │
+│  │ • Progressão de Níveis          │   │
 │  │ • Event Listeners               │   │
 │  └─────────────────────────────────┘   │
 └─────────────────────────────────────────┘
@@ -215,40 +249,80 @@ git-playground/
 
 #### Estados Globais (`app.js`)
 ```javascript
-let repo = false;           // Repositório inicializado?
-let branch = "";            // Branch atual
-let branches = [];          // Lista de branches
-let commits = [];           // Histórico de commits
-let mergeFeito = false;     // Merge realizado?
-let prCriado = false;       // PR criado?
-let questIndex = 0;         // Índice do desafio atual
+// Estado do Repositório
+let repo = false;
+let branch = "";
+let branches = [];
+let commits = [];
+let stash = [];
+
+// Tracking de Ações
+let mergeFeito = false;
+let mergedBranches = [];
+let pushDone = false;
+let pullDone = false;
+let stashPopped = false;
+let stashUsed = false;
+let revertDone = false;
+let resetDone = false;
+
+// Sistema de Quests
+let questIndex = 0;
+let difficulty = "basico";
+let completedLevels = [];
+
+// Histórico de Comandos
+let commandHistory = [];
+let historyIndex = -1;
+let lastCommand = "";
 ```
 
-#### Sistema de Quests
+#### Sistema de Quests (`quests.js`)
 ```javascript
-const quests = [
+const questsBasico = [
   {
     title: "Título",
     desc: "Descrição",
     hint: "Dica",
-    check: () => boolean  // Função de validação
-  },
-  // ...
+    steps: [  // Subtarefas opcionais
+      { text: "texto", done: () => boolean }
+    ],
+    check: () => boolean  // Validação
+  }
 ];
+
+const levelOrder = ["basico", "medio", "dificil", "sandbox"];
+```
+
+#### Sistema de Validação (`commands.js`)
+```javascript
+function executeCommand(cmd) {
+  // Valida contexto (Básico/Médio bloqueiam comandos fora do escopo)
+  const allowFreePlay = difficulty === "dificil" || difficulty === "sandbox";
+  
+  if (!allowFreePlay && !isAllowedByQuest) {
+    return log("⚠️ Este comando não faz parte do desafio atual.");
+  }
+  
+  // Executa comando...
+}
 ```
 
 ### Adicionar Novos Comandos
 
-Para adicionar um novo comando Git, modifique a função `executar()` em `app.js`:
+Para adicionar um novo comando Git, modifique `commands.js`:
 
 ```javascript
-else if (cmd === "seu-comando") {
+else if (cmd.startsWith("git seu-comando")) {
   if (!repo) return log("fatal: não é um repositório git");
+  
   // Sua lógica aqui
   log("Resultado do comando");
+  
   updateStatus();
   renderGraph();
   checkQuest();
+  updateQuest();  // Atualiza checklist
 }
 ```
 
@@ -275,14 +349,24 @@ Abra o **DevTools** do navegador (F12) para:
 
 ## 🚀 Roadmap
 
-- [ ] Mais comandos Git (rebase, stash, cherry-pick, reset)
+### ✅ Implementado
+- [x] 4 níveis de dificuldade com progressão obrigatória
+- [x] 20 desafios com checklist interativo
+- [x] Sistema de subtarefas com validação em tempo real
+- [x] 13 comandos Git essenciais (init, commit, branch, checkout, merge, status, stash, pop, push, pull, revert, reset)
+- [x] Histórico de comandos com setas ⬆️⬇️
+- [x] Validação contextual de comandos
+- [x] Persistência de histórico entre níveis
+- [x] Arquitetura modular (3 arquivos JS)
+
+### 🔜 Em Planejamento
+- [ ] Mais comandos Git (rebase, cherry-pick, tag, log)
 - [ ] Sistema de pontuação e badges
-- [ ] Modo colaborativo multiplayer
 - [ ] Exportar histórico de sessão (JSON/CSV)
-- [ ] Simular conflitos de merge com resolução
+- [ ] Simular conflitos de merge com resolução interativa
 - [ ] Progressive Web App (PWA) - Modo offline
-- [ ] Suporte multilíngue (PT, EN, ES, FR)
-- [ ] Tema claro/escuro alternável
+- [ ] Suporte multilíngue (PT, EN, ES)
+- [ ] Tutorial interativo para iniciantes
 - [ ] Testes unitários e E2E
 
 ---
